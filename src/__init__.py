@@ -1,9 +1,11 @@
 from configparser import ConfigParser
+import logging
+import json
 import os
 
 
-config = ConfigParser()
-config.read(os.path.join('.config', 'config.ini'))
+conf = ConfigParser()
+conf.read(os.path.join('conf', 'config.ini'))
 
 '''
 ; ******log設定******
@@ -26,25 +28,30 @@ config.read(os.path.join('.config', 'config.ini'))
 ; LOG_DAYS=
 '''
 
-LOG_PATH = config.get('LOG', 'LOG_PATH', fallback='logs')
-LOG_LEVEL = config.get('LOG', 'LOG_LEVEL', fallback='WARNING')
-LOG_DISABLE = config.getboolean('LOG', 'LOG_DISABLE', fallback=False)
-LOG_FILE_DISABLE = config.getboolean('LOG', 'LOG_FILE_DISABLE', fallback=False)
-LOG_SIZE = config.get('LOG', 'LOG_SIZE', fallback=None)
-LOG_DAYS = config.getint('LOG', 'LOG_DAYS', fallback=7)
+# logs相關參數
+# 關閉log功能 輸入選項 (true, True, 1) 預設 不關閉
+LOG_DISABLE = conf.getboolean('LOG', 'LOG_DISABLE', fallback=False)
+# logs路徑 預設 logs
+LOG_PATH = conf.get('LOG', 'LOG_PATH', fallback='logs')
+# 設定紀錄log等級 DEBUG,INFO,WARNING,ERROR,CRITICAL 預設WARNING
+LOG_LEVEL = conf.get('LOG', 'LOG_LEVEL', fallback='WARNING')
+# 關閉紀錄log檔案 輸入選項 (true, True, 1)  預設 關閉
+LOG_FILE_DISABLE = conf.getboolean('LOG', 'LOG_FILE_DISABLE', fallback=True)
 
-CLOUDFLARE_EMAIL = config.get('CLOUDFLARE', 'CLOUDFLARE_EMAIL', fallback=None)
-CLOUDFLARE_KEY = config.get('CLOUDFLARE', 'CLOUDFLARE_KEY', fallback=None)
-CLOUDFLARE_TOKEN = config.get('CLOUDFLARE', 'CLOUDFLARE_TOKEN', fallback=None)
-
+if LOG_DISABLE:
+    logging.disable()
 
 log_setting = {
     'LOG_PATH': LOG_PATH,
     'LOG_DISABLE': LOG_DISABLE,
     'LOG_FILE_DISABLE': LOG_FILE_DISABLE,
     'LOG_LEVEL': LOG_LEVEL,
-    'LOG_DAYS': LOG_DAYS
 }
 
-if LOG_SIZE:
-    log_setting['LOG_SIZE'] = LOG_SIZE
+# cloudflare設定json檔路徑 預設值 conf/cloudflare.json
+CLOUDFLARE_JSON_PATH = conf.get('SETTING', 'CLOUDFLARE_JSON_PATH', fallback='conf/cloudflare.json')
+if os.path.exists(CLOUDFLARE_JSON_PATH):
+    with open(CLOUDFLARE_JSON_PATH, 'r') as f:
+        CLOUDFLARE_INFO = json.loads(f.read())
+else:
+    CLOUDFLARE_INFO = []

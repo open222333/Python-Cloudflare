@@ -1,5 +1,4 @@
-config.ini
-logs
+logs/
 test*
 
 # Byte-compiled / optimized / DLL files

@@ -18,7 +18,6 @@
 ; 指定保留log天數(輸入數字) 預設7
 ; LOG_DAYS=
 
-[CLOUDFLARE]
-CLOUDFLARE_API_URL=
-CLOUDFLARE_EMAIL=
-CLOUDFLARE_KEY=
+[SETTING]
+; cloudflare設定json檔路徑 預設值 conf/cloudflare.json
+; CLOUDFLARE_JSON_PATH=

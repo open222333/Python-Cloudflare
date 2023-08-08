@@ -1,37 +1,36 @@
-from src import LOG_LEVEL, LOG_DISABLE, LOG_DAYS
+from src import LOG_LEVEL, LOG_FILE_DISABLE
 from src.logger import Log
 from typing import Union
 import requests
 import json
 
 
-logger = Log()
-if LOG_DISABLE:
-    logger.disable_log()
+logger = Log('CLOUDFLARE')
 logger.set_level(LOG_LEVEL)
+if LOG_FILE_DISABLE:
+    logger.set_date_handler()
 logger.set_msg_handler()
-logger.set_date_handler(amount=LOG_DAYS)
 
 
 class CloudFlare():
 
-    def __init__(self, api_key: str, api_token: str, cloudflare_email: str) -> None:
+    def __init__(self, api_key: str, api_token: str, email: str) -> None:
         """初始化cloudflare基本資訊
 
         Args:
             api_key (str): Cloudflare API 密鑰
             api_token (str): Cloudflare API 令牌
-            cloudflare_email (str): Cloudflare 電子郵件
+            email (str): Cloudflare 電子郵件
         """
         self.api_key = api_key
         self.api_token = api_token
-        self.cloudflare_email = cloudflare_email
+        self.email = email
 
 
 class Zone(CloudFlare):
 
-    def __init__(self, api_key: str, api_token: str, cloudflare_email: str) -> None:
-        super().__init__(api_key, api_token, cloudflare_email)
+    def __init__(self, api_key: str, api_token: str, email: str) -> None:
+        super().__init__(api_key, api_token, email)
 
     def get_zones(self) -> Union[str, None]:
         """取得所有zones
@@ -47,7 +46,7 @@ class Zone(CloudFlare):
 
         # 定義 API 請求的 headers
         headers = {
-            'X-Auth-Email': self.cloudflare_email,
+            'X-Auth-Email': self.email,
             'X-Auth-Key': self.api_key,
             'Content-Type': 'application/json'
         }
@@ -98,7 +97,7 @@ class Zone(CloudFlare):
 
         # 定義 API 請求的 headers
         headers = {
-            'X-Auth-Email': self.cloudflare_email,
+            'X-Auth-Email': self.email,
             'X-Auth-Key': self.api_key,
             'Content-Type': 'application/json'
         }
@@ -130,7 +129,7 @@ class Zone(CloudFlare):
 
         # 設定請求的標頭
         headers = {
-            'X-Auth-Email': self.cloudflare_email,
+            'X-Auth-Email': self.email,
             'X-Auth-Key': self.api_key,
             'Content-Type': 'application/json'
         }
@@ -167,7 +166,7 @@ class Zone(CloudFlare):
 
         # 設定請求的標頭
         headers = {
-            'X-Auth-Email': self.cloudflare_email,
+            'X-Auth-Email': self.email,
             'X-Auth-Key': self.api_key,
             'Content-Type': 'application/json'
         }
@@ -186,8 +185,15 @@ class Zone(CloudFlare):
 
 class Record(CloudFlare):
 
-    def __init__(self, api_key: str, api_token: str, cloudflare_email: str) -> None:
-        super().__init__(api_key, api_token, cloudflare_email)
+    def __init__(self, api_key: str, api_token: str, email: str) -> None:
+        """指向紀錄
+
+        Args:
+            api_key (str): _description_
+            api_token (str): _description_
+            email (str): _description_
+        """
+        super().__init__(api_key, api_token, email)
 
     def get_dns_records(self, zone_id: str) -> Union[str, None]:
         """根據zone_id取得所有指向紀錄
@@ -205,7 +211,7 @@ class Record(CloudFlare):
 
         # 定義 API 請求的 headers
         headers = {
-            'X-Auth-Email': self.cloudflare_email,
+            'X-Auth-Email': self.email,
             'X-Auth-Key': self.api_key,
             'Content-Type': 'application/json'
         }
@@ -242,7 +248,7 @@ class Record(CloudFlare):
         # 設定 HTTP headers
         headers = {
             'Content-Type': 'application/json',
-            'X-Auth-Email': self.cloudflare_email,
+            'X-Auth-Email': self.email,
             'X-Auth-Key': self.api_key,
             'Authorization': f'Bearer {self.api_token}'
         }
@@ -270,11 +276,20 @@ class Record(CloudFlare):
 
 class DNSSEC(CloudFlare):
 
-    def __init__(self, api_key: str, api_token: str, cloudflare_email: str) -> None:
-        super().__init__(api_key, api_token, cloudflare_email)
+    def __init__(self, api_key: str, api_token: str, email: str) -> None:
+        """
 
-    def get_dnssec_id(self, zone_id: str) -> Union[str, None]:
-        """根據zone_id取得dnssec_id
+        Args:
+            api_key (str): _description_
+            api_token (str): _description_
+            email (str): _description_
+        """
+        super().__init__(api_key, api_token, email)
+
+    def get_dnssec_details(self, zone_id: str) -> Union[str, None]:
+        """根據 zone_id 取得 dnssec 細節
+
+        [DNSSEC Details](https://developers.cloudflare.com/api/operations/dnssec-dnssec-details)
 
         Args:
             zone_id (str): 域名ID
@@ -287,7 +302,7 @@ class DNSSEC(CloudFlare):
 
         # 設置 API headers
         headers = {
-            'X-Auth-Email': self.cloudflare_email,
+            'X-Auth-Email': self.email,
             'X-Auth-Key': self.api_key,
             'Content-Type': 'application/json'
         }
@@ -303,21 +318,21 @@ class DNSSEC(CloudFlare):
             logger.error(f'根據zone_id取得dnssec_id 發生錯誤: {response.status_code}\n{response.json()}')
             return None
 
-    def active_dnssec(self, zone_id: str, dnssec_id: str) -> Union[str, None]:
+    def active_dnssec(self, zone_id: str) -> Union[str, None]:
         """啟用DNSSEC
 
         [Edit DNSSEC Status](https://developers.cloudflare.com/api/operations/dnssec-edit-dnssec-status)
 
         Args:
             zone_id (str): _description_
-            dnssec_id (str): _description_
 
         Returns:
             Union[str, None]: cloudflare json格式
         """
 
         # 設置 API 相關資訊
-        url = f'https://api.cloudflare.com/client/v4/zones/{zone_id}/dnssec/{dnssec_id}/edit'
+        # url = f'https://api.cloudflare.com/client/v4/zones/{zone_id}/dnssec/{dnssec_id}/edit'
+        url = f'https://api.cloudflare.com/client/v4/zones/{zone_id}/dnssec'
 
         # 設置請求標頭
         headers = {
@@ -331,7 +346,7 @@ class DNSSEC(CloudFlare):
         }
 
         # 發送請求
-        response = requests.put(url, headers=headers, json=data)
+        response = requests.patch(url, headers=headers, json=data)
         if response.status_code == 200:
             json_response = json.loads(response.text)
             if not json_response['success']:
