@@ -312,10 +312,10 @@ class DNSSEC(CloudFlare):
         if response.status_code == 200:
             json_response = json.loads(response.text)
             if not json_response['success']:
-                logger.error(f'根據zone_id取得dnssec_id 發生錯誤:\n{json_response}')
+                logger.error(f'根據 zone_id 取得 dnssec 細節 發生錯誤:\n{json_response}')
             return json_response
         else:
-            logger.error(f'根據zone_id取得dnssec_id 發生錯誤: {response.status_code}\n{response.json()}')
+            logger.error(f'根據 zone_id 取得 dnssec 細節 發生錯誤: {response.status_code}\n{response.json()}')
             return None
 
     def active_dnssec(self, zone_id: str) -> Union[str, None]:

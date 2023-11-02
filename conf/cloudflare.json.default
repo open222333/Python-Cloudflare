@@ -1,11 +1,11 @@
 [
   {
     "execute": false,
-    "account": "",
     "api_key": "",
     "api_token": "",
     "email": "",
     "domains_txt_path": "domains.txt",
+    "active_dnssec": false,
     "records": [
       {
         "type": "A",
